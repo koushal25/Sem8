@@ -1,0 +1,39 @@
+from tensorflow.keras.datasets import fashion_mnist
+from keras.models import Sequential
+from keras.layers import Dense,Flatten,Conv2D,MaxPooling2D
+import numpy as np
+
+(train_x,train_y),(x_test,y_test)=fashion_mnist.load_data()
+train_x = train_x.astype(np.float32).reshape(-1,28,28,1)
+x_test = x_test.astype(np.float32).reshape(-1,28,28,1)
+
+model=Sequential()
+
+model.add(Conv2D(64,(3,3),activation='relu',input_shape=(28,28,1)))
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+model.add(Flatten())
+model.add(Dense(128,activation='relu'))
+model.add(Dense(10,activation='softmax'))
+
+model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
+model.fit(train_x.astype(np.float32),train_y.astype(np.float32),epochs=3,validation_split=0.2)
+
+loss,acc=model.evaluate(x_test,y_test)
+labels = ['t_shirt', 'trouser', 'pullover', 'dress', 'coat', 'sandal', 'shirt', 'sneaker',   'bag', 'ankle_boots']
+predictions = model.predict(x_test[:3])
+
+import matplotlib.pyplot as plt
+for i, p in enumerate(predictions):
+    indi = np.argmax(p)
+    label = labels[indi]
+    confidence_score = p[indi]
+
+    print(f"Prediction for image {i+1}: Label = {label}, Confidence = {confidence_score * 100:.2f}%")
+
+    # Reshape the image and display it
+    image = np.squeeze(x_test[i])
+
+    plt.imshow(image, cmap='gray')
+    plt.title(f'Prediction: {label} (Confidence: {confidence_score * 100:.2f}%)')
+    plt.show()
